@@ -108,48 +108,58 @@ def getStates(img2, L):
     
 def createMatrix(V1, V2, V3, V4, V5, V6):
     mat = [V1, V2, V3, V4, V5, V6]
+    print len(mat)
     return mat
-#Pasar el path
-path = "tests/lleno.png"
 
-#Cargar la imagen y resaltar colores
-try:  
-    img = Image.open(path)  
-    #converter = ImageEnhance.Color(img)
-    #img2 = converter.enhance(3)
-    #img2.save("saturadas/lleno.png", "PNG")
-except IOError:
-    print "No se encontro la imagen"
+def validarMatrix(matrix):
+    for i in range(0,len(matrix) - 1):
+        if len(matrix[i]) < 7:
+            return False
+    return matrix
 
+def ejecutar(path):
+    #Cargar la imagen y resaltar colores
+    try:  
+        img = Image.open(path)  
+        #converter = ImageEnhance.Color(img)
+        #img2 = converter.enhance(3)
+        #img2.save("saturadas/lleno.png", "PNG")
+    except IOError:
+        print "No se encontro la imagen"
 
-(pixin, pixfn) =  sacarAncho(img)
-rangoT = pixfn - pixin
-print rangoT
-print "\n"
-print pixin, pixfn
-#Saco las lineas del tablero
-L1 = pixin + (rangoT * 0.145)
-L2 = L1 + (rangoT * 0.155)
-L3 = L2 + (rangoT * 0.155)
-L4 = L3 + (rangoT * 0.155)
-L5 = L4 + (rangoT * 0.155)
-L6 = L5 + (rangoT * 0.155)
+    (pixin, pixfn) =  sacarAncho(img)
+    rangoT = pixfn - pixin
+    # print rangoT
+    # print "\n"
+    # print pixin, pixfn
+    #Saco las lineas del tablero
+    L1 = pixin + (rangoT * 0.145)
+    L2 = L1 + (rangoT * 0.155)
+    L3 = L2 + (rangoT * 0.155)
+    L4 = L3 + (rangoT * 0.155)
+    L5 = L4 + (rangoT * 0.155)
+    L6 = L5 + (rangoT * 0.155)
 
-L1 = int(L1 + 1)
-L2 = int(L2 + 1)
-L3 = int(L3 + 1)
-L4 = int(L4 + 1)
-L5 = int(L5 + 1)
-L6 = int(L6 + 1)
-#print L1, L2, L3, L4, L5, L6
-#Vectores para sacar los estadoss
+    L1 = int(L1 + 1)
+    L2 = int(L2 + 1)
+    L3 = int(L3 + 1)
+    L4 = int(L4 + 1)
+    L5 = int(L5 + 1)
+    L6 = int(L6 + 1)
+    #print L1, L2, L3, L4, L5, L6
+    #Vectores para sacar los estadoss
 
-V1 = getStates(img, L1)
-V2 = getStates(img, L2)
-V3 = getStates(img, L3)
-V4 = getStates(img, L4)
-V5 = getStates(img, L5)
-V6 = getStates(img, L6)
+    V1 = getStates(img, L1)
+    V2 = getStates(img, L2)
+    V3 = getStates(img, L3)
+    V4 = getStates(img, L4)
+    V5 = getStates(img, L5)
+    V6 = getStates(img, L6)
 
-matrix = createMatrix(V1, V2, V3, V4, V5, V6)
-print matrix
+    matrix = createMatrix(V1, V2, V3, V4, V5, V6)
+
+    matrix = validarMatrix(matrix)
+
+    return matrix
+
+    

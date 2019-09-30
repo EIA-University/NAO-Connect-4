@@ -4,12 +4,13 @@
 import sys
 import time
 import random
+import os, random 
+
 
 # Python Image Library
 import Image
 
 from naoqi import ALProxy
-
 
 def showNaoImage(IP, PORT):
   """
@@ -61,4 +62,7 @@ def showNaoImage(IP, PORT):
   return path
 
 def sinNAO(IP, PORT):
-  return "imagenes/edfmrhfmxi.png"
+  file1 = random.choice(os.listdir("imagenes/"))
+  path = "imagenes/" + file1
+  return  path
+  #return "imagenes/edfmrhfmxi.png"
