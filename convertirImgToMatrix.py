@@ -108,7 +108,7 @@ def getStates(img2, L):
     
 def createMatrix(V1, V2, V3, V4, V5, V6):
     mat = [V1, V2, V3, V4, V5, V6]
-    print len(mat)
+    #print len(mat)
     return mat
 
 def validarMatrix(matrix):
