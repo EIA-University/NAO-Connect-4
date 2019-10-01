@@ -122,8 +122,8 @@ def ejecutar(path):
     try:  
         img = Image.open(path)  
         #converter = ImageEnhance.Color(img)
-        #img2 = converter.enhance(3)
-        #img2.save("saturadas/lleno.png", "PNG")
+        #img = converter.enhance(3)
+        #img.save("saturadas/lleno.png", "PNG")
     except IOError:
         print "No se encontro la imagen"
 
@@ -162,4 +162,6 @@ def ejecutar(path):
 
     return matrix
 
-    
+if __name__ == "__main__":
+    path = "imagenes\edfmrhfmxi.png"
+    fre = ejecutar(path)
