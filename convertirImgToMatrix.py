@@ -161,7 +161,3 @@ def ejecutar(path):
     matrix = validarMatrix(matrix)
 
     return matrix
-
-if __name__ == "__main__":
-    path = "imagenes/edfmrhfmxi.png"
-    fre = ejecutar(path)
