@@ -11,18 +11,19 @@ if __name__ == '__main__':
     PORT = 9559
     
     while True:
-        path = take.showNaoImage(IP, PORT)
-        #print path
+        #path = take.sinNAO(IP, PORT)
+        path = "imagenes/zezpngutqs.png"
+        print path
         matrix = conv.ejecutar(path)
         print matrix
         if matrix != False:
             jugada = games.play(matrix)
-            talk.talk("Put the piece in the colum " + str(jugada), IP, PORT)
-            talk.talk("It is your turn", IP, PORT)
+            talk.talkSinNAO("Put the piece in the colum " + str(jugada), IP, PORT)
+            talk.talkSinNAO("It is your turn", IP, PORT)
             time.sleep(10)
         else:
-            talk.talk("I can't see right the game", IP, PORT)
-            time.sleep(10)
+            talk.talkSinNAO("I can't see right the game", IP, PORT)
+            time.sleep(5)
     
     
     

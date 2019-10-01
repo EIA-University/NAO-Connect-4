@@ -1,5 +1,6 @@
 from PIL import Image
 from PIL import ImageEnhance
+import PIL
 #Imagen de 640x480
 #Metodos para comprobar colores
 #0 Espacio, -1 B, 1 W
@@ -14,7 +15,7 @@ def isWhite(r, g, b):
     return False
 
 def isRed(r, g, b):
-    if r < 200 and r > 95 and g < 110 and g > 50 and b < 110 and b > 45:
+    if r < 200 and r >= 90 and g < 110 and g > 50 and b < 110 and b > 45:
         return True
     return False
 
@@ -38,6 +39,21 @@ def sacarAncho(img):
             pixfin = 479 - i
     return(pixini,pixfin)
 
+def sacarAlto(img):
+    #Sacar el ancho de la imagen
+    pixini = -1
+    pixfin = -1
+
+    for i in range(0, 640):
+        (r,g,b) = img.getpixel((240, i))
+        if isRed(r, g, b) and pixini == -1:
+            pixini = i
+
+        (r,g,b) = img.getpixel((240, 639 - i))
+        if isRed(r, g, b) and pixfin == -1:
+            pixfin = 639 - i
+    return(pixini,pixfin)
+
 def getStates(img2, L):
     #Variables necesarias
     countR = 0
@@ -50,7 +66,7 @@ def getStates(img2, L):
     flagR = False
     flagF = False
     v = []
-    i = 0
+    i = 100
     k = 0
     #Recorro la imagen
     while i < 640:
@@ -59,7 +75,7 @@ def getStates(img2, L):
         if flagR is not True:
             if isRed(r,g,b):
                 countR = countR + 1
-            if countR > 10:
+            if countR > 5:
                 countR = 0
                 flagR = True
         else:
@@ -71,13 +87,13 @@ def getStates(img2, L):
                         countB = countB + 1
                     elif isWhite(r,g,b):
                         countW = countW + 1 
-                    if countE > 10:
+                    if countE > 5:
                         flagE = True
                         flagF = True
-                    elif countB > 10:
+                    elif countB > 5:
                         flagB = True
                         flagF = True
-                    elif countW > 10:
+                    elif countW > 5:
                         flagW = True
                         flagF = True
             else:
@@ -89,14 +105,14 @@ def getStates(img2, L):
                         flagR = False
                         countB = 0
                         k = k + 1
-                    if flagW:
+                    elif flagW:
                         v.append(1)
                         flagW = False
                         flagF = False
                         flagR = False
                         countW = 0
                         k = k + 1
-                    if flagE:
+                    elif flagE:
                         v.append(0)
                         flagE = False
                         flagF = False
@@ -122,42 +138,49 @@ def ejecutar(path):
     try:  
         img = Image.open(path)  
         #converter = ImageEnhance.Color(img)
-        #img = converter.enhance(3)
+        #img = converter.enhance(2)
         #img.save("saturadas/lleno.png", "PNG")
     except IOError:
         print "No se encontro la imagen"
 
-    (pixin, pixfn) =  sacarAncho(img)
-    rangoT = pixfn - pixin
+    (pixiniAn, pixfnAn) =  sacarAncho(img)
+    (pixiniAlt, pixfnAlt) =  sacarAlto(img)
+
+    print pixiniAlt, pixfnAlt
+    print pixiniAn, pixfnAn
+
+
+    # rangoT = pixfn - pixin
     # print rangoT
     # print "\n"
     # print pixin, pixfn
     #Saco las lineas del tablero
-    L1 = pixin + (rangoT * 0.145)
-    L2 = L1 + (rangoT * 0.155)
-    L3 = L2 + (rangoT * 0.155)
-    L4 = L3 + (rangoT * 0.155)
-    L5 = L4 + (rangoT * 0.155)
-    L6 = L5 + (rangoT * 0.155)
+    # L1 = pixin + (rangoT * 0.145)
+    # L2 = L1 + (rangoT * 0.155)
+    # L3 = L2 + (rangoT * 0.155)
+    # L4 = L3 + (rangoT * 0.155)
+    # L5 = L4 + (rangoT * 0.155)
+    # L6 = L5 + (rangoT * 0.155)
 
-    L1 = int(L1 + 1)
-    L2 = int(L2 + 1)
-    L3 = int(L3 + 1)
-    L4 = int(L4 + 1)
-    L5 = int(L5 + 1)
-    L6 = int(L6 + 1)
+    # L1 = int(L1 + 1)
+    # L2 = int(L2 + 1)
+    # L3 = int(L3 + 1)
+    # L4 = int(L4 + 1)
+    # L5 = int(L5 + 1)
+    # L6 = int(L6 + 1)
     #print L1, L2, L3, L4, L5, L6
     #Vectores para sacar los estadoss
 
-    V1 = getStates(img, L1)
-    V2 = getStates(img, L2)
-    V3 = getStates(img, L3)
-    V4 = getStates(img, L4)
-    V5 = getStates(img, L5)
-    V6 = getStates(img, L6)
+    # V1 = getStates(img, L1)
+    # V2 = getStates(img, L2)
+    # V3 = getStates(img, L3)
+    # V4 = getStates(img, L4)
+    # V5 = getStates(img, L5)
+    # V6 = getStates(img, L6)
 
-    matrix = createMatrix(V1, V2, V3, V4, V5, V6)
+    # matrix = createMatrix(V1, V2, V3, V4, V5, V6)
+    # print matrix
+    # matrix = validarMatrix(matrix)
 
-    matrix = validarMatrix(matrix)
+    return True
 
-    return matrix

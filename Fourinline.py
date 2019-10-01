@@ -144,7 +144,7 @@ class Board(Node):
       return heuristicValues
     # Best Move
     if cont < 2: # Paso 1: Retorna el movimiento que mas jugadas le bloquea al enemigo
-      #print("El mov que más bloquea: ", heuristicValues)
+      #print("El mov que mas bloquea: ", heuristicValues)
       return heuristicValues
     # Calcula heuristicas del paso 2 si existe mas de un hijo con maxHeuristic
     for i in range(iMax, len(heuristicValues)):
@@ -155,7 +155,7 @@ class Board(Node):
         heuristicValues[i] += self.countOpenMovesVer(v, self.children[i].i, self.children[i].mark) + self.countOpenMovesHorDia(h, self.children[i].j, self.children[i].mark) + self.countOpenMovesHorDia(d1, posD1, self.children[i].mark) + self.countOpenMovesHorDia(d2, posD2, self.children[i].mark)
     (iMax, cont, maxHeuristic) = self.findMax(heuristicValues)
     if cont < 2: # Paso 2: Retorna el movimiento que mas jugadas me genere
-      #print("Mov que más me genera: ", heuristicValues)
+      #print("Mov que mas me genera: ", heuristicValues)
       return heuristicValues
     # Calcula heuristicas del paso 3 si existe mas de un hijo con maxHeuristic
     for i in range(iMax, len(heuristicValues)):
