@@ -4,6 +4,7 @@ import PIL
 #Imagen de 640x480
 #Metodos para comprobar colores
 #0 Espacio, -1 B, 1 W
+
 def isBlack(r, g, b):
     if r < 110 and r > 15 and g < 80 and g > 40 and b < 110 and b > 60:
         return True
