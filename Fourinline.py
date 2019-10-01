@@ -73,9 +73,9 @@ class Node(object):
       while len(stack)!=0:
           node=stack.pop()
           if node.operator is not None:
-              print(f'operador:  {node.operators[node.operator]} \t estado: {node.state}')
+              print "f'operador:  {node.operators[node.operator]} \t estado: {node.state}'"
           else:
-              print(f' {node.state}')
+              print "f' {node.state}'"
   
   def heuristic(self):
     return 0
