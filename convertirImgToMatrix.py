@@ -163,5 +163,5 @@ def ejecutar(path):
     return matrix
 
 if __name__ == "__main__":
-    path = "imagenes\edfmrhfmxi.png"
+    path = "imagenes/edfmrhfmxi.png"
     fre = ejecutar(path)
