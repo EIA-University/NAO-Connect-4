@@ -26,7 +26,7 @@ def isFondo(r, g, b):
     return False
 
 def sacarAncho(img):
-    #Sacar el ancho de la imagen
+    # Sacar el ancho de la imagen
     pixini = -1
     pixfin = -1
 
