@@ -190,13 +190,14 @@ def dibujarCuadricula(img, w, h):
     space = math.trunc(w/7)
     for i in range(1, 7): # Generar 6 lineas
         for y in range(0, h): # Toda la profundidad
-            img.putpixel((space*i, y), (255, 215, 0, 255)) # Lineas en (RGBA)
+            img.putpixel((space * i, y), (255, 215, 0, 255)) # Lineas en (RGBA)
     # Dibujar rayas Horizontales
     space = math.trunc(h/6)
     for i in range(1, 6): # Generar 5 lineas
         for x in range(0, w): # Todo el ancho
             img.putpixel((x, space*i), (255, 215, 0, 255))
     img.save("editadas/cuadricula.png","PNG")
+    
 
 def ejecutar(path):
     # Cargar la imagen
@@ -207,13 +208,16 @@ def ejecutar(path):
     # Si la foto cargo exitosamente
     (w, h) = img.size # Sacar tamanno a la imagen
     imgB = binarizarImg(img) # Binarizar imagen
+
     # Delimitar el tablero
     (yMin, yMax) = delimitarAlto(imgB, w, h) # Delimitar el tablero verticalmente
     imgB = cortarImg(imgB, 0, yMin, w-1, yMax)
     (w, h) = imgB.size
     (xMin, xMax) = delimitarAncho(imgB, w, h) # Delimitar el tablero horizontalmente
+
     # Cortar foto
     imgC = cortarImg(img, xMin, yMin, xMax, yMax)
+
     # Dibuja la cuadricula
     (w, h) = imgC.size # Sacar tamanno a la imagen
     dibujarCuadricula(imgC, w, h)
