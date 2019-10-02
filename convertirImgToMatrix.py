@@ -1,9 +1,11 @@
 from PIL import Image
-from PIL import ImageEnhance
+import math
 import PIL
-#Imagen de 640x480
-#Metodos para comprobar colores
-#0 Espacio, -1 B, 1 W
+
+# Espacio: 0
+# Fichas blancas (IA): 1
+# Fichas Negras (Enemigo): -1
+
 def isBlack(r, g, b):
     if r < 110 and r > 15 and g < 80 and g > 40 and b < 110 and b > 60:
         return True
@@ -24,35 +26,71 @@ def isFondo(r, g, b):
         return True
     return False
 
-def sacarAncho(img):
-    #Sacar el ancho de la imagen
-    pixini = -1
-    pixfin = -1
+# Retorna la posicion del pixel inicial y final en donde se encuentra el tablero (Verticalmente)
+def delimitarAlto(img, w, h):
+    posIni = -1
+    posFin = -1
+    middle = math.trunc(w/2)
+    cont = 0 # 3 pixeles consecutivos seran la sennal
+    i = 0
+    stop = False # Indicacion de parada
+    while (i<h and (not stop)): # Buscar la posicion inicial
+        c = img.getpixel((middle, i))
+        if c == 0: # Si es negro
+            cont += 1
+        elif c == 255 and cont > 0: # Si se danna la fila consecutiva
+            cont = 0
+        if cont == 3: # Si existen 3 negros seguidos
+            posIni = i
+            stop = True # Detener el ciclo
+        i += 1 # Avanzar en el ciclo
+    cont = 0
+    i = h-1
+    stop = False
+    while (not stop): # Buscar la posicion final
+        c = img.getpixel((middle, i))
+        if c == 0: # Si es negro
+            cont += 1
+        elif c == 255 and cont > 0: # Si se danna la fila consecutiva
+            cont = 0
+        if cont == 3: # Si existen 3 negros seguidos
+            posFin = i
+            stop = True
+        i -= 1 # Avanzar en el ciclo
+    return(posIni, posFin)
 
-    for i in range(0, 480):
-        (r,g,b) = img.getpixel((330, i))
-        if isRed(r, g, b) and pixini == -1:
-            pixini = i
-
-        (r,g,b) = img.getpixel((330, 479 - i))
-        if isRed(r, g, b) and pixfin == -1:
-            pixfin = 479 - i
-    return(pixini,pixfin)
-
-def sacarAlto(img):
-    #Sacar el ancho de la imagen
-    pixini = -1
-    pixfin = -1
-
-    for i in range(0, 640):
-        (r,g,b) = img.getpixel((240, i))
-        if isRed(r, g, b) and pixini == -1:
-            pixini = i
-
-        (r,g,b) = img.getpixel((240, 639 - i))
-        if isRed(r, g, b) and pixfin == -1:
-            pixfin = 639 - i
-    return(pixini,pixfin)
+# Retorna la posicion del pixel inicial y final en donde se encuentra el tablero (Horizontalmente)
+def delimitarAncho(img, w, h):
+    posIni = -1
+    posFin = -1
+    middle = math.trunc(h/2)
+    cont = 0 # 3 pixeles consecutivos seran la sennal
+    i = 0
+    stop = False # Indicacion de parada
+    while (i<w and (not stop)): # Buscar la posicion inicial
+        c = img.getpixel((i, middle))
+        if c == 0: # Si es negro
+            cont += 1
+        elif c == 255 and cont > 0: # Si se danna la fila consecutiva
+            cont = 0
+        if cont == 3: # Si existen 3 negros seguidos
+            posIni = i
+            stop = True # Detener el ciclo
+        i += 1 # Avanzar en el ciclo
+    cont = 0
+    i = w-1
+    stop = False
+    while (not stop): # Buscar la posicion final
+        c = img.getpixel((i, middle))
+        if c == 0: # Si es negro
+            cont += 1
+        elif c == 255 and cont > 0: # Si se danna la fila consecutiva
+            cont = 0
+        if cont == 3: # Si existen 3 negros seguidos
+            posFin = i
+            stop = True
+        i -= 1 # Avanzar en el ciclo
+    return(posIni, posFin)
 
 def getStates(img2, L):
     #Variables necesarias
@@ -133,54 +171,49 @@ def validarMatrix(matrix):
             return False
     return matrix
 
+# Vuelve la foto blanco y negro sacando los promedios de RGB
+def binarizarImg(img):
+    img = img.convert("L") # Convierte la foto a blanco y negro
+    threshold = 110 # Cualquier valor por debajo de este numero sera negro
+    img = img.point(lambda p: p > threshold and 255) # Binarizar
+    #img.save("editadas/binarizada.jpg") # Guarda la foto en la carpeta
+    return img
+
+# Genera una subimagen basado en ciertas posiciones
+def cortarImg(img, xMin, yMin, xMax, yMax):
+    img = img.crop((xMin, yMin, xMax, yMax))
+    #img.save("editadas/cortada.jpg")
+    return img
+
+def dibujarCuadricula(img, w, h):
+    # Dibujar rayas Verticales
+    space = math.trunc(w/7)
+    for i in range(1, 7): # Generar 6 lineas
+        for y in range(0, h): # Toda la profundidad
+            img.putpixel((space*i, y), (255, 215, 0, 255)) # Lineas en (RGBA)
+    # Dibujar rayas Horizontales
+    space = math.trunc(h/6)
+    for i in range(1, 6): # Generar 5 lineas
+        for x in range(0, w): # Todo el ancho
+            img.putpixel((x, space*i), (255, 215, 0, 255))
+    img.save("editadas/cuadricula.jpg")
+
 def ejecutar(path):
-    #Cargar la imagen y resaltar colores
+    # Cargar la imagen
     try:  
-        img = Image.open(path)  
-        #converter = ImageEnhance.Color(img)
-        #img = converter.enhance(2)
-        #img.save("saturadas/lleno.png", "PNG")
+        img = Image.open(path)
     except IOError:
         print "No se encontro la imagen"
-
-    (pixiniAn, pixfnAn) =  sacarAncho(img)
-    (pixiniAlt, pixfnAlt) =  sacarAlto(img)
-
-    print pixiniAlt, pixfnAlt
-    print pixiniAn, pixfnAn
-
-
-    # rangoT = pixfn - pixin
-    # print rangoT
-    # print "\n"
-    # print pixin, pixfn
-    #Saco las lineas del tablero
-    # L1 = pixin + (rangoT * 0.145)
-    # L2 = L1 + (rangoT * 0.155)
-    # L3 = L2 + (rangoT * 0.155)
-    # L4 = L3 + (rangoT * 0.155)
-    # L5 = L4 + (rangoT * 0.155)
-    # L6 = L5 + (rangoT * 0.155)
-
-    # L1 = int(L1 + 1)
-    # L2 = int(L2 + 1)
-    # L3 = int(L3 + 1)
-    # L4 = int(L4 + 1)
-    # L5 = int(L5 + 1)
-    # L6 = int(L6 + 1)
-    #print L1, L2, L3, L4, L5, L6
-    #Vectores para sacar los estadoss
-
-    # V1 = getStates(img, L1)
-    # V2 = getStates(img, L2)
-    # V3 = getStates(img, L3)
-    # V4 = getStates(img, L4)
-    # V5 = getStates(img, L5)
-    # V6 = getStates(img, L6)
-
-    # matrix = createMatrix(V1, V2, V3, V4, V5, V6)
-    # print matrix
-    # matrix = validarMatrix(matrix)
+    # Si la foto cargo exitosamente
+    (w, h) = img.size # Sacar tamanno a la imagen
+    imgB = binarizarImg(img) # Binarizar imagen
+    # Delimitar el tablero
+    (yMin, yMax) = delimitarAlto(imgB, w, h) # Delimitar el tablero verticalmente
+    (xMin, xMax) = delimitarAncho(imgB, w, h) # Delimitar el tablero horizontalmente
+    # Cortar foto
+    imgC = cortarImg(img, xMin,yMin, xMax, yMax)
+    # Dibuja la cuadricula
+    (w, h) = imgC.size # Sacar tamanno a la imagen
+    dibujarCuadricula(imgC, w, h)
 
     return True
-
