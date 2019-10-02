@@ -30,11 +30,11 @@ def isFondo(r, g, b):
 def delimitarAlto(img, w, h):
     posIni = -1
     posFin = -1
-    middle = math.trunc(w/2)
+    middle = math.trunc(w / 2)
     cont = 0 # 3 pixeles consecutivos seran la sennal
     i = 0
     stop = False # Indicacion de parada
-    while (i<h and (not stop)): # Buscar la posicion inicial
+    while (i < h and (not stop)): # Buscar la posicion inicial
         c = img.getpixel((middle, i))
         if c == 0: # Si es negro
             cont += 1
@@ -47,7 +47,7 @@ def delimitarAlto(img, w, h):
     cont = 0
     i = h-1
     stop = False
-    while (not stop): # Buscar la posicion final
+    while ( i > 0 and (not stop)): # Buscar la posicion final
         c = img.getpixel((middle, i))
         if c == 0: # Si es negro
             cont += 1
@@ -57,7 +57,7 @@ def delimitarAlto(img, w, h):
             posFin = i
             stop = True
         i -= 1 # Avanzar en el ciclo
-    return(posIni, posFin)
+    return(posIni - 10, posFin - 14)
 
 # Retorna la posicion del pixel inicial y final en donde se encuentra el tablero (Horizontalmente)
 def delimitarAncho(img, w, h):
@@ -67,7 +67,7 @@ def delimitarAncho(img, w, h):
     cont = 0 # 3 pixeles consecutivos seran la sennal
     i = 0
     stop = False # Indicacion de parada
-    while (i<w and (not stop)): # Buscar la posicion inicial
+    while (i < w and (not stop)): # Buscar la posicion inicial
         c = img.getpixel((i, middle))
         if c == 0: # Si es negro
             cont += 1
@@ -80,7 +80,7 @@ def delimitarAncho(img, w, h):
     cont = 0
     i = w-1
     stop = False
-    while (not stop): # Buscar la posicion final
+    while (i > 0 and (not stop)): # Buscar la posicion final
         c = img.getpixel((i, middle))
         if c == 0: # Si es negro
             cont += 1
@@ -90,7 +90,7 @@ def delimitarAncho(img, w, h):
             posFin = i
             stop = True
         i -= 1 # Avanzar en el ciclo
-    return(posIni, posFin)
+    return(posIni + 10, posFin)
 
 def getStates(img2, L):
     #Variables necesarias
@@ -174,15 +174,15 @@ def validarMatrix(matrix):
 # Vuelve la foto blanco y negro sacando los promedios de RGB
 def binarizarImg(img):
     img = img.convert("L") # Convierte la foto a blanco y negro
-    threshold = 110 # Cualquier valor por debajo de este numero sera negro
+    threshold = 120 # Cualquier valor por debajo de este numero sera negro
     img = img.point(lambda p: p > threshold and 255) # Binarizar
-    #img.save("editadas/binarizada.jpg") # Guarda la foto en la carpeta
+    img.save("editadas/binarizada.jpg") # Guarda la foto en la carpeta
     return img
 
 # Genera una subimagen basado en ciertas posiciones
 def cortarImg(img, xMin, yMin, xMax, yMax):
     img = img.crop((xMin, yMin, xMax, yMax))
-    #img.save("editadas/cortada.jpg")
+    img.save("editadas/cortada.png","PNG")
     return img
 
 def dibujarCuadricula(img, w, h):
@@ -196,7 +196,7 @@ def dibujarCuadricula(img, w, h):
     for i in range(1, 6): # Generar 5 lineas
         for x in range(0, w): # Todo el ancho
             img.putpixel((x, space*i), (255, 215, 0, 255))
-    img.save("editadas/cuadricula.jpg")
+    img.save("editadas/cuadricula.png","PNG")
 
 def ejecutar(path):
     # Cargar la imagen
@@ -209,11 +209,13 @@ def ejecutar(path):
     imgB = binarizarImg(img) # Binarizar imagen
     # Delimitar el tablero
     (yMin, yMax) = delimitarAlto(imgB, w, h) # Delimitar el tablero verticalmente
+    imgB = cortarImg(imgB, 0, yMin, w-1, yMax)
+    (w, h) = imgB.size
     (xMin, xMax) = delimitarAncho(imgB, w, h) # Delimitar el tablero horizontalmente
     # Cortar foto
-    imgC = cortarImg(img, xMin,yMin, xMax, yMax)
+    imgC = cortarImg(img, xMin, yMin, xMax, yMax)
     # Dibuja la cuadricula
     (w, h) = imgC.size # Sacar tamanno a la imagen
     dibujarCuadricula(imgC, w, h)
 
-    return True
+    return imgC

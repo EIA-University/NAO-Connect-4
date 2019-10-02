@@ -56,7 +56,7 @@ class ImageWidget(QWidget):
 
         print vision_definitions
         # Select camera.
-        self._videoProxy.setParam(vision_definitions.kCameraSelectID, 1)
+        self._videoProxy.setParam(vision_definitions.kCameraSelectID, 0)
 
 
     def _unregisterImageClient(self):
