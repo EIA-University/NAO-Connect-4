@@ -215,3 +215,5 @@ def ejecutar(path):
     # Dibuja la cuadricula
     (w, h) = imgC.size # Sacar tamanno a la imagen
     dibujarCuadricula(imgC, w, h)
+
+    return True
