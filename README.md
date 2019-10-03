@@ -9,3 +9,7 @@ Librerias y programas necesarios:
 
 ## Uso
 El software funciona de tal forma que se conecta directamente a NAO y saca las imagenes necesarias para su procesamiento en el computador localmente
+
+
+## To Do
+Habilitar el modulo sensors para que juegue cualo un sensor sea tocado
