@@ -1,30 +1,35 @@
 from PIL import Image
 import math
 import PIL
+from PIL import ImageDraw
+import numpy as np
 
 # Espacio: 0
 # Fichas blancas (IA): 1
 # Fichas Negras (Enemigo): -1
 
-def isBlack(r, g, b):
-    if r < 110 and r > 15 and g < 80 and g > 40 and b < 110 and b > 60:
-        return True
-    return False
+# Retorna el numero del color identificado: 0 Negro, 1 Blanco, 2 Verde
+def getColor(color):
+    # Valores malechores ;)
+    avgBlack = 63.30769231
+    avgWhite = 210.5897436
+    avgGreen = 113.8717949
+    
 
-def isWhite(r, g, b):
-    if r > 140 and g > 220 and b > 220:
-        return True
-    return False
+    c = color[0] + color[1] + color[2]
+    c = c / 3
 
-def isRed(r, g, b):
-    if r < 200 and r >= 90 and g < 110 and g > 50 and b < 110 and b > 45:
-        return True
-    return False
+    distancias = []
+    distancias.append(abs(c - avgBlack))
+    distancias.append(abs(c - avgWhite))
+    distancias.append(abs(c - avgGreen))
 
-def isFondo(r, g, b):
-    if r > 25 and r < 50 and g > 145 and g < 215 and b > 128 and b < 195:
-        return True
-    return False
+    mini = min(distancias)
+    i = 0
+    while i < 3:
+        if distancias[i] == mini:
+            return i
+        i += 1
 
 # Retorna la posicion del pixel inicial y final en donde se encuentra el tablero (Verticalmente)
 def delimitarAlto(img, w, h):
@@ -92,84 +97,32 @@ def delimitarAncho(img, w, h):
         i -= 1 # Avanzar en el ciclo
     return(posIni + 10, posFin)
 
-def getStates(img2, L):
-    #Variables necesarias
-    countR = 0
-    countB = 0
-    countW = 0
-    countE = 0
-    flagE = False
-    flagW = False
-    flagB = False
-    flagR = False
-    flagF = False
-    v = []
-    i = 100
-    k = 0
-    #Recorro la imagen
-    while i < 640:
-        (r,g,b) = img2.getpixel((i, L))
-        #Determino si ya estoy en la parte roja del tablero
-        if flagR is not True:
-            if isRed(r,g,b):
-                countR = countR + 1
-            if countR > 5:
-                countR = 0
-                flagR = True
-        else:
-            if flagF is not True:
-                if isRed(r,g,b) is not True:
-                    if isFondo(r,g,b):
-                        countE = countE + 1
-                    elif isBlack(r,g,b):
-                        countB = countB + 1
-                    elif isWhite(r,g,b):
-                        countW = countW + 1 
-                    if countE > 5:
-                        flagE = True
-                        flagF = True
-                    elif countB > 5:
-                        flagB = True
-                        flagF = True
-                    elif countW > 5:
-                        flagW = True
-                        flagF = True
-            else:
-                if k <= 6:
-                    if flagB:
-                        v.append(-1)
-                        flagB = False
-                        flagF = False
-                        flagR = False
-                        countB = 0
-                        k = k + 1
-                    elif flagW:
-                        v.append(1)
-                        flagW = False
-                        flagF = False
-                        flagR = False
-                        countW = 0
-                        k = k + 1
-                    elif flagE:
-                        v.append(0)
-                        flagE = False
-                        flagF = False
-                        flagR = False
-                        countE = 0
-                        k = k + 1
-        i = i + 1
-    return v
-    
-def createMatrix(V1, V2, V3, V4, V5, V6):
-    mat = [V1, V2, V3, V4, V5, V6]
-    #print len(mat)
-    return mat
+# Retorna el tipo de estado de la ficha, segun el color del centro de su delimitacion
+def getPoints(img, w, h):
+    # Sacamos la mitad de los cuadros
+    ySpace = math.trunc(w / 7) # n
+    yCenter = math.trunc(ySpace / 2) # m
+    xSpace = math.trunc(h / 6) 
+    xCenter = math.trunc(xSpace / 2)
 
-def validarMatrix(matrix):
-    for i in range(0,len(matrix) - 1):
-        if len(matrix[i]) < 7:
-            return False
-    return matrix
+    # Matriz de puntos de los centros
+    puntos = []
+
+    for i in xrange(1, 15, 2):
+        p = []
+        for j in xrange(1, 13, 2):
+            p.append((yCenter * i, xCenter * j))
+        puntos.append(p)
+
+    return puntos
+
+# Dibuja una linea sobre los centros de la cuadricula horizontalmente
+def drawPoints(img, w, h, matriz):
+    draw = ImageDraw.Draw(img)
+    for i in range(0, len(matriz)):
+    
+        draw.line(matriz[i],  (255, 215, 0, 255))
+    img.save("editadas/centros.jpg")
 
 # Vuelve la foto blanco y negro sacando los promedios de RGB
 def binarizarImg(img):
@@ -185,6 +138,7 @@ def cortarImg(img, xMin, yMin, xMax, yMax):
     img.save("editadas/cortada.png","PNG")
     return img
 
+# Dibuja la cuadricula de la foto
 def dibujarCuadricula(img, w, h):
     # Dibujar rayas Verticales
     space = math.trunc(w/7)
@@ -197,8 +151,41 @@ def dibujarCuadricula(img, w, h):
         for x in range(0, w): # Todo el ancho
             img.putpixel((x, space*i), (255, 215, 0, 255))
     img.save("editadas/cuadricula.png","PNG")
-    
 
+# Saca los estados de la imagen
+def getStates(img, puntos):
+    matrix = []
+
+    for i in range(0, len(puntos)):
+        aux = []        
+        flagSpace = False
+        for j in reversed(range(0, len(puntos[0]))):
+            c = img.getpixel(puntos[i][j])
+            index = getColor(c)
+            
+            if not flagSpace:
+                if index == 0:
+                    # Si es Nigga
+                    aux.append(-1)
+                elif index == 1:
+                    # Si es no Nigga
+                    aux.append(1)
+                elif index == 2:
+                    # Si es aguacate
+                    flagSpace = True
+                    aux.append(0)
+            else:
+                aux.append(0)
+
+        aux.reverse()
+        matrix.append(aux)
+
+    matrix = np.transpose(matrix)    
+    return matrix
+
+
+
+# Funcion principal que ejecuta todo
 def ejecutar(path):
     # Cargar la imagen
     try:  
@@ -222,4 +209,10 @@ def ejecutar(path):
     (w, h) = imgC.size # Sacar tamanno a la imagen
     dibujarCuadricula(imgC, w, h)
 
-    return imgC
+    # Saca los centros la cuadricula
+    centros = getPoints(imgC, w, h)
+
+    # Sacar los estados de la cuadricula
+    matrix = getStates(imgC, centros)
+
+    return matrix
