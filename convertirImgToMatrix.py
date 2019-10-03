@@ -184,7 +184,6 @@ def getStates(img, puntos):
     return matrix
 
 
-
 # Funcion principal que ejecuta todo
 def ejecutar(path):
     # Cargar la imagen
