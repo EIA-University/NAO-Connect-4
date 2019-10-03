@@ -11,7 +11,7 @@ from naoqi import ALModule
 import __main__ as game
 
 # Global variable to store the ReactToTouch module instance
-ReactToTouch = None
+ReactToTouch1 = None
 memory = None
 
 class ReactToTouch(ALModule):
@@ -50,8 +50,8 @@ def main(ip, port):
        port)        # parent broker port
 
 
-    global ReactToTouch
-    ReactToTouch = ReactToTouch("ReactToTouch")
+    global ReactToTouch1
+    ReactToTouch1 = ReactToTouch("ReactToTouch")
 
     try:
         while True:
