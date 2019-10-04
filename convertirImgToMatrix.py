@@ -1,32 +1,24 @@
-#from PIL import Image
 import math
-#import PIL
-#from PIL import ImageDraw
-#from PIL import ImageFilter
 import numpy as np
 import cv2
 
 # Espacio: 0
 # Fichas blancas (IA): 1
 # Fichas Negras (Enemigo): -1
+# NOTA: OpenCV2 does not use RBG, use BGR (Blue, Green, Red)
 
 # Retorna el numero del color identificado: 0 Negro, 1 Blanco, 2 Verde
 def getColor(color):
-    # Valores malechores ;)
+    # Valores promedio tomados de varias fotos
     avgBlack = 63.30769231
     avgWhite = 210.5897436
     avgGreen = 113.8717949
-    
-
-    c = color[0] + color[1] + color[2]
-    c = c / 3
-
-    distancias = []
+    c = (color[0] + color[1] + color[2]) / 3 # RGB Promedio
+    distancias = [] # Distancia del color al promedio de cada uno
     distancias.append(abs(c - avgBlack))
     distancias.append(abs(c - avgWhite))
     distancias.append(abs(c - avgGreen))
-
-    mini = min(distancias)
+    mini = min(distancias) # Distancia minima
     i = 0
     while i < 3:
         if distancias[i] == mini:
@@ -42,7 +34,7 @@ def delimitarAlto(img, w, h):
     i = 0
     stop = False # Indicacion de parada
     while (i < h and (not stop)): # Buscar la posicion inicial
-        c = img.getpixel((middle, i))
+        c = img[i, middle]
         if c == 0: # Si es negro
             cont += 1
         elif c == 255 and cont > 0: # Si se danna la fila consecutiva
@@ -55,7 +47,7 @@ def delimitarAlto(img, w, h):
     i = h-1
     stop = False
     while ( i > 0 and (not stop)): # Buscar la posicion final
-        c = img.getpixel((middle, i))
+        c = img[i, middle]
         if c == 0: # Si es negro
             cont += 1
         elif c == 255 and cont > 0: # Si se danna la fila consecutiva
@@ -64,7 +56,7 @@ def delimitarAlto(img, w, h):
             posFin = i
             stop = True
         i -= 1 # Avanzar en el ciclo
-    return(posIni - 10, posFin - 14)
+    return(posIni, posFin)
 
 # Retorna la posicion del pixel inicial y final en donde se encuentra el tablero (Horizontalmente)
 def delimitarAncho(img, w, h):
@@ -75,7 +67,7 @@ def delimitarAncho(img, w, h):
     i = 0
     stop = False # Indicacion de parada
     while (i < w and (not stop)): # Buscar la posicion inicial
-        c = img.getpixel((i, middle))
+        c = img[middle, i]
         if c == 0: # Si es negro
             cont += 1
         elif c == 255 and cont > 0: # Si se danna la fila consecutiva
@@ -88,7 +80,7 @@ def delimitarAncho(img, w, h):
     i = w-1
     stop = False
     while (i > 0 and (not stop)): # Buscar la posicion final
-        c = img.getpixel((i, middle))
+        c = img[middle, i]
         if c == 0: # Si es negro
             cont += 1
         elif c == 255 and cont > 0: # Si se danna la fila consecutiva
@@ -124,31 +116,28 @@ def drawPoints(img, w, h, matriz):
 
 # Vuelve la foto blanco y negro sacando los promedios de RGB
 def binarizarImg(img):
-    img = img.convert("L") # Convierte la foto a blanco y negro
-    threshold = 120 # Cualquier valor por debajo de este numero sera negro
-    img = img.point(lambda p: p > threshold and 255) # Binarizar
-    img.save("editadas/binarizada.jpg") # Guarda la foto en la carpeta
-    return img
+    imgB, imgG, imgR = cv2.split(img) # Blue, Green, Red
+    retval, threshold = cv2.threshold(imgR, 120, 255, cv2.THRESH_BINARY_INV)
+    return threshold
 
 # Genera una subimagen basado en ciertas posiciones
 def cortarImg(img, xMin, yMin, xMax, yMax):
-    img = img.crop((xMin, yMin, xMax, yMax))
-    img.save("editadas/cortada.png")
-    return img
+    crop_img = img[yMin:yMax, xMin:xMax]
+    return crop_img
 
 # Dibuja la cuadricula de la foto
 def dibujarCuadricula(img, w, h):
     # Dibujar rayas Verticales
     space = math.trunc(w/7)
-    for i in range(1, 7): # Generar 6 lineas
-        for y in range(0, h): # Toda la profundidad
-            img.putpixel((space * i, y), (255, 215, 0, 255)) # Lineas en (RGBA)
+    for j in range(1, 7): # Generar 6 lineas
+        for i in range(0, h): # Toda la profundidad
+            img[i, space * j] = [128, 0, 255] # Lineas en (BGA)
     # Dibujar rayas Horizontales
     space = math.trunc(h/6)
     for i in range(1, 6): # Generar 5 lineas
-        for x in range(0, w): # Todo el ancho
-            img.putpixel((x, space*i), (255, 215, 0, 255))
-    img.save("editadas/cuadricula.png")
+        for j in range(0, w): # Todo el ancho
+            img[i * space, j] = [128, 0, 255]
+    return img
 
 # Saca los estados de la imagen
 def getStates(img, puntos):
@@ -179,7 +168,7 @@ def getStates(img, puntos):
 
 # Pruebas con OpenCV
 def testCV2(img_color): # frame = img
-    #cv2.imshow('Original', img_color)
+    cv2.imshow('Original', img_color)
     #colores
     img_r=img_color[:,:,2]
     img_g=img_color[:,:,1]
@@ -196,40 +185,26 @@ def restarImagen(img1, img2):
     return cv2.subtract(img1, img2)
 
 # Funcion principal que ejecuta todo
-def ejecutar(path):
-    # Cargar la imagen}
-    try: 
-        # img = Image.open(path)
-        
-        # # Si la foto cargo exitosamente
-        # (w, h) = img.size # Sacar tamanno a la imagen
-        # imgB = binarizarImg(img) # Binarizar imagen
-
-        # # Delimitar el tablero
-        # (yMin, yMax) = delimitarAlto(imgB, w, h) # Delimitar el tablero verticalmente
-        # imgB = cortarImg(imgB, 0, yMin, w-1, yMax)
-        # (w, h) = imgB.size
-        # (xMin, xMax) = delimitarAncho(imgB, w, h) # Delimitar el tablero horizontalmente
-
-        # # Cortar foto
-        # imgC = cortarImg(img, xMin, yMin, xMax, yMax)
-
-        # # Dibuja la cuadricula
-        # (w, h) = imgC.size # Sacar tamanno a la imagen
-        # dibujarCuadricula(imgC, w, h)
-
+def ejecutar(path, path2):
+    try: # Cargar la imagen
+        img = cv2.imread(path)
+        h, w, c = img.shape # Sacar tamanno a la imagen (ignorar c)
+        imgB = binarizarImg(img) # Binarizar imagen
+        # Delimitar el tablero
+        (yMin, yMax) = delimitarAlto(imgB, w, h) # Delimitar el tablero verticalmente
+        imgB = cortarImg(imgB, 0, yMin, w-1, yMax)
+        h, w = imgB.shape # Esta foto ya no contiene canales
+        (xMin, xMax) = delimitarAncho(imgB, w, h) # Delimitar el tablero horizontalmente
+        # Cortar foto
+        imgC = cortarImg(img, xMin, yMin, xMax, yMax)   
+        # Dibuja la cuadricula
+        h, w, c = imgC.shape
+        imgCuad = dibujarCuadricula(imgC, w, h)
+        cv2.imwrite(path2, imgCuad)
         # # Saca los centros la cuadricula
         # centros = getPoints(imgC, w, h)
-
         # # Sacar los estados de la cuadricula
         # matrix = getStates(imgC, centros)
-
         # return matrix
-
-        img = cv2.imread(path)
-        cv2.__version__
-        testCV2(img)
-
-
     except IOError:
-        print("No se encontro la imagen")
+        print "No se encontro la imagen"
