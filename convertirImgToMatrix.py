@@ -179,17 +179,28 @@ def getStates(img, puntos):
 
 # Pruebas con OpenCV
 def testCV2(img_color): # frame = img
-    #cv2.imshow('Original', img_color)
+    cv2.imshow('Original', img_color)
     #colores
-    img_r=img_color[:,:,2]
-    img_g=img_color[:,:,1]
-    img_b=img_color[:,:,0]
-    rojo=restarImagen(img_r, img_g)
+    (img_r, img_g, img_b) = extraerColores(img_color)
+    rojo = restarImagen(img_r, img_g)
     # cv2.imshow('Rojo', img_r)
     # cv2.imshow('Verde', img_g)
     # cv2.imshow('Azul', img_b)
     cv2.imshow('Final', rojo)
     cv2.waitKey(0)
+
+# Extraer colores de la imagen
+def extraerColores(imgColor):
+    rows, cols, rgb = imgColor.shape
+    R = []
+    G = []
+    B = []
+    for i in range(rows):
+        for j in range(cols):
+            B.append(imgColor[i, j, 0])
+            G.append(imgColor[i, j, 1])
+            R.append(imgColor[i, j, 2])
+    return (R, G, B)
 
 # Restar dos colores en una img
 def restarImagen(img1, img2):
