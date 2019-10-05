@@ -55,9 +55,9 @@ class Node(object):
     return self.f() < other.f()
   
   def repeatStatePath(self, state):
-      n=self
-      while n is not None and n.state!=state:
-          n=n.parent
+      n = self
+      while n is not None and n.state is not state:
+          n = n.parent
       return n is not None
     
   def pathObjective(self):
