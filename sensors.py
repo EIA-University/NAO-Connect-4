@@ -9,9 +9,16 @@ from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
 
+import getImagePhoto as take
+import sendText as talk
+import convertirImgToMatrix as conv
+import Fourinline as games
+
 # Global variable to store the ReactToTouch module instance
 ReactToTouch = None
 memory = None
+IP = None
+PORT = None
 
 class ReactToTouch(ALModule):
     """ A simple module able to react
@@ -23,7 +30,7 @@ class ReactToTouch(ALModule):
         # we have our Python broker connected to NAOqi broker
 
         # Create a proxy to ALTextToSpeech for later use
-        self.tts = ALProxy("ALTextToSpeech")
+        # self.tts = ALProxy("ALTextToSpeech")
 
         # Subscribe to TouchChanged event:
         global memory
@@ -40,37 +47,27 @@ class ReactToTouch(ALModule):
         memory.unsubscribeToEvent("TouchChanged", "ReactToTouch")
 
         # Aqui empieza a hacer cualquier cosa
-        touched_bodies = []
+
         for p in value:
             if p[1]:
-                touched_bodies.append(p[0])
-
-        self.say(touched_bodies)
-
-        # Aqui acaba de hacer cualquier cosa
+                jugar(self.IP, self.PORT)
+                break
+        # Aqui acaba de hacer cualquier cosa, reparar sin break :(
 
         # Subscribe again to the event
         memory.subscribeToEvent("TouchChanged", "ReactToTouch", "onTouched")
 
-    def say(self, bodies):
-        if (bodies == []):
-            return
-
-        sentence = "My " + bodies[0]
-
-        for b in bodies[1:]:
-            sentence = sentence + " and my " + b
-
-        if (len(bodies) > 1):
-            sentence = sentence + " are"
-        else:
-            sentence = sentence + " is"
-        sentence = sentence + " touched."
-
-        self.tts.say(sentence)
     
-    def tocado(self):
-        pass
+def jugar(IP, PORT):
+    path = take.showNaoImage(IP, PORT)
+    print path
+    matrix = conv.ejecutar(path)
+    print matrix
+    jugada = games.play(matrix)
+    talk.talk("Put the piece in the colum " + str(jugada), IP, PORT)
+    time.sleep(1)
+    talk.talk("It's your turn, when you finish, touch some sensor for me to play", IP, PORT)
+
 
 
 def main(ip, port):
@@ -88,7 +85,8 @@ def main(ip, port):
 
     global ReactToTouch
     ReactToTouch = ReactToTouch("ReactToTouch")
-    print "Sali de aca"
+
+
     try:
         while True:
             time.sleep(1)
