@@ -5,7 +5,7 @@ Librerias y programas necesarios:
 
 * [Python PIL para Windows](http://www.pythonware.com/products/pil/)
 * [Softbank Robotics Software](https://community.ald.softbankrobotics.com/en/resources/software/language/en-gb/field_software_type/sdk) De aqui descargar Pepper Software Suite 2.5.10 para control y de NAO y Python NAOqi SDK
-* [OpenCV 2.3.1 para Windows](https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.3.1/OpenCV-2.3.1-win-superpack.exe/download) De aqui copiar unos archviso a C:
+* [OpenCV 2.3.1 para Windows](https://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.3.1/OpenCV-2.3.1-win-superpack.exe/download) De aqui copiar los archivos de la carpeta descomprimida opencv/builds/python/2.7 a la carpeta C:/Python27/lib/site-packages/
 
 ## Uso
 El software funciona de tal forma que se conecta directamente a NAO y saca las imagenes necesarias para su procesamiento en el computador localmente
