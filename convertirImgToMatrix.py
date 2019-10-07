@@ -145,8 +145,10 @@ def getStates(img, puntos):
     for i in range(0, len(puntos)):
         aux = []        
         flagSpace = False
-        for j in reversed(range(0, len(puntos[0]))):
-            c = img.getpixel(puntos[i][j])
+        for j in reversed(range(1, len(puntos[0]))):
+            punto = puntos[i][j]
+            c = img[punto[0], punto[1]]
+            # c = img.getpixel(puntos[i][j])
             index = getColor(c)   
             if not flagSpace:
                 if index == 0:
@@ -185,7 +187,7 @@ def restarImagen(img1, img2):
     return cv2.subtract(img1, img2)
 
 # Funcion principal que ejecuta todo
-def ejecutar(path, path2):
+def ejecutar(path):
     try: # Cargar la imagen
         img = cv2.imread(path)
         h, w, c = img.shape # Sacar tamanno a la imagen (ignorar c)
@@ -200,8 +202,10 @@ def ejecutar(path, path2):
         # Dibuja la cuadricula
         h, w, c = imgC.shape
         imgCuad = dibujarCuadricula(imgC, w, h)
-        cv2.imwrite(path2, imgCuad)
         # Saca los centros la cuadricula
+        cv2.imshow("foto de nao 2", imgCuad)
+        cv2.imshow("foto de nao", imgC)
+        cv2.waitKey(0)
         centros = getPoints(imgC, w, h)
         # Sacar los estados de la cuadricula
         matrix = getStates(imgC, centros)
