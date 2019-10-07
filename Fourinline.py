@@ -297,7 +297,7 @@ class Board(Node):
   
   # Dado un vector, verifica si la marca dd esta en el 4 veces seguidas.
   def checkWin(self, vec, mark):
-    if len(vec)<4:
+    if len(vec) < 4:
       return False
     else:
       val = 0 # Acumulador temporal
@@ -475,5 +475,5 @@ def play(initState):
   b = 1 # Marca de la IA
   operators = [0,1,2,3,4,5,6]
   m = n
-  b = Board(mark=m, i=0, j=0, state=initState,value="1",operators=operators, operator=None, parent=None,objective=None)
-  return alpha_beta(b, 1, float('-inf'), float('inf'), True)[1] # Columna de la mejor jugada
+  br = Board(mark=m, i=0, j=0, state=initState,value="1",operators=operators, operator=None, parent=None,objective=None)
+  return alpha_beta(br, 1, float('-inf'), float('inf'), True) # Columna de la mejor jugada
