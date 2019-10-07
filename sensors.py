@@ -109,7 +109,6 @@ def comprobarGanador(estado, i, j):
     return br.isWinner()
 
 
-
 def jugar(IP, PORT):
     global primeraJugada, estadoActual, estadoAnterior
 
@@ -184,7 +183,3 @@ def main(ip, port):
         print "Interrupted by user, shutting down"
         myBroker.shutdown()
         sys.exit(0)
-
-if __name__ == "__main__":
-    IP = "nao.local"
-    PORT = 9559
