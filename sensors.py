@@ -116,13 +116,8 @@ def jugar(IP, PORT):
     path = take.showNaoImage(IP, PORT)
     print path
     primeraJugada = False
-    #estadoActual = conv.ejecutar(path)
-    estadoActual = [[0,0,0,0,0,0,0],
-                    [1,0,0,0,0,0,0],
-                    [1,0,0,0,0,0,0],
-                    [1,0,0,0,0,0,0],
-                    [1,0,0,0,0,0,0],
-                    [1,-1,1,-1,1,1,1],]
+    estadoActual = conv.ejecutar(path)
+
     print estadoActual
 
     # Revisa si es la primera jugada
@@ -160,7 +155,7 @@ def jugar(IP, PORT):
                 talk.talk("It's your turn, when you finish, touch me some sensor to play", IP, PORT)
                 
 
-         else: # Es necesario tomar otra foto
+        else: # Es necesario tomar otra foto
             talk.talk("It's necesary take another photo", IP, PORT)
 
 

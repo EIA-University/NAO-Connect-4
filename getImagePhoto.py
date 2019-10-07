@@ -8,7 +8,7 @@ import os, random
 
 
 # Python Image Library
-import Image
+from PIL import Image
 
 from naoqi import ALProxy
 
