@@ -161,11 +161,11 @@ if __name__ == "__main__":
     #     else: # Es necesario tomar otra foto
     #         print "Es necesario tomar otra foto"
 
-    # path = "imagenes/mijpuzshui.png"
-    # m = conv.ejecutar(path)
+    path = "imagenes/yucsbmlomq.png"
+    m = conv.ejecutar(path)
 
-    import os
-    for file in os.listdir("imagenes/"):
-        if file.endswith(".png"):
-            path =  os.path.join("imagenes/", file)
-            img = conv.ejecutar(path)
+    # import os
+    # for file in os.listdir("imagenes/"):
+    #     if file.endswith(".png"):
+    #         path =  os.path.join("imagenes/", file)
+    #         img = conv.ejecutar(path)
