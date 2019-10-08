@@ -9,7 +9,7 @@
 # from naoqi import ALBroker
 # from naoqi import ALModule
 # import argparse
-
+import convertirImgToMatrix as conv
 # # Global variable to store the ReactToTouch module instance
 # ReactToTouch = None
 # memory = None
@@ -139,24 +139,33 @@ def ponerNuevaFicha(estado, jugada):
 primeraJugada = True # Se asume que la primera jugada siempre es del enemigo
 # Supongamos que este es el método jugar
 if __name__ == "__main__":
-    # Supongamos que es el estado que devuelve el método convertir
-    estadoActual=[[0,0,0,0,0,0,0],
-            [1,0,0,0,0,0,0],
-            [1,0,0,0,0,0,0],
-            [1,0,0,0,0,0,0],
-            [1,0,0,0,0,0,0],
-            [1,-1,1,-1,1,1,1],]
-    if primeraJugada:
-        estadoAnterior = estadoAnteriorInicial()
-        jugada = 0 # Supongamos que esta es la jugada que nos devuelve la IA
-        # Hablar
-        estadoAnterior = ponerNuevaFicha(estadoActual, jugada)
-        primeraJugada = False
-    else: # Si ya no es la primera jugada
-        if aceptarEstado(estadoAnterior, estadoActual): # Se puede seguir jugando
-            print "Se puede seguir jugando"
-            # jugada = Esta es la jugada que nos devuelve la IA
-            # Hablar
-            estadoAnterior = ponerNuevaFicha(estadoAnterior)
-        else: # Es necesario tomar otra foto
-            print "Es necesario tomar otra foto"
+    # # Supongamos que es el estado que devuelve el método convertir
+    # estadoActual=[[0,0,0,0,0,0,0],
+    #         [1,0,0,0,0,0,0],
+    #         [1,0,0,0,0,0,0],
+    #         [1,0,0,0,0,0,0],
+    #         [1,0,0,0,0,0,0],
+    #         [1,-1,1,-1,1,1,1],]
+    # if primeraJugada:
+    #     estadoAnterior = estadoAnteriorInicial()
+    #     jugada = 0 # Supongamos que esta es la jugada que nos devuelve la IA
+    #     # Hablar
+    #     estadoAnterior = ponerNuevaFicha(estadoActual, jugada)
+    #     primeraJugada = False
+    # else: # Si ya no es la primera jugada
+    #     if aceptarEstado(estadoAnterior, estadoActual): # Se puede seguir jugando
+    #         print "Se puede seguir jugando"
+    #         # jugada = Esta es la jugada que nos devuelve la IA
+    #         # Hablar
+    #         estadoAnterior = ponerNuevaFicha(estadoAnterior)
+    #     else: # Es necesario tomar otra foto
+    #         print "Es necesario tomar otra foto"
+
+    # path = "imagenes/mijpuzshui.png"
+    # m = conv.ejecutar(path)
+
+    import os
+    for file in os.listdir("imagenes/"):
+        if file.endswith(".png"):
+            path =  os.path.join("imagenes/", file)
+            img = conv.ejecutar(path)
