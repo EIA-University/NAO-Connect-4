@@ -187,7 +187,8 @@ def ponerNuevaFicha(estado, jugada):
         if estado[i][jugada] != 0:
             estado[i-1][jugada] = 1 # Se asume que estamos poniendo una jugada de la IA
             flag = True
-        i += 1
+        else:
+            i += 1
     if i == len(estado): # Es necesario poner en la ultima fila
         estado[i-1][jugada] = 1
     return estado

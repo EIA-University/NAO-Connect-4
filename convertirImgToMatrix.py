@@ -331,9 +331,9 @@ def ejecutar(path):
         puntos = organizarPuntos(puntos)
         # Sacar los estados de la cuadricula
         matriz = getEstado(imgC, puntos)
-        # print ""
-        # for i in range(0, len(matriz)):
-        #     print matriz[i]
+        print ""
+        for i in range(0, len(matriz)):
+            print matriz[i]
         return matriz
 
         # ---- PRUEBAS
