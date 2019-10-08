@@ -56,13 +56,15 @@ class ReactToTouch(ALModule):
         # for p in value:
         #     if p[1]:
         #         jugar(IP1, PORT1)
+
         touched_bodies = []
         for p in value:
             if p[1]:
                 touched_bodies.append(p[0])
                 self.jugar(IP1, PORT1)
+                break
 
-        self.say(touched_bodies)
+        # self.say(touched_bodies)
 
         # Subscribe again to the event
         memory.subscribeToEvent("TouchChanged",
@@ -85,36 +87,45 @@ class ReactToTouch(ALModule):
         sentence = sentence + " touched."
 
         self.tts.say(sentence)
+
     def jugar(self, IP, PORT):
 
         global primeraJugada, estadoAnterior
 
         path = take.showNaoImage(IP, PORT)
-        print path
+        # print path
         # primeraJugada = False
-        # print "holaa2"
+        print "Toma foto"
         estadoActual = conv.ejecutar(path)
-        
-        print estadoActual
+        # print estadoActual
+        print "Saca estado actual"
 
         # Revisa si es la primera jugada
         if primeraJugada:
+            print "Entro en primera jugada"
             estadoAnterior = estadoAnteriorInicial()
+            print "1-----"
             (heu, jugada) = games.play(estadoActual) # Esta es la jugada que nos devuelve la IA
+            print heu, jugada
+
             # Logica
             estadoAnterior = ponerNuevaFicha(estadoActual, jugada)
             primeraJugada = False
             # Hablar
             talk.talk("Put the piece in the colum " + str(jugada), IP, PORT)
-            time.sleep(1)
+            time.sleep(0.8)
             talk.talk("It's your turn, when you finish, touch me some sensor to play", IP, PORT)
         
         else:
+            print "Entra en No es primera jugada"
             (acepta, i, j) = aceptarEstado(estadoAnterior, estadoActual)
+            print "Saca aceptarEstado"
+            print acepta, i, j
             if acepta: # Se puede seguir jugando
-
+                print "Entra en acepta"
                 # Verifica si gana el otro
                 ganarOtro = comprobarGanador(estadoActual, i, j)
+                print "Saca comprobarGanado"
 
                 if ganarOtro: # Si el otro gana
                     talk.talk("Oh shit, i've lost, teacher, please, forgive us, we are mortals, we aren't perfects", IP, PORT)
@@ -129,11 +140,13 @@ class ReactToTouch(ALModule):
                         talk.talk("I win, we derserve a 5", IP, PORT)
                         sys.exit(0)
                     time.sleep(1)
-                    talk.talk("It's your turn, when you finish, touch me some sensor to play", IP, PORT)
+                    talk.talk("It's your turn", IP, PORT)
                     
 
             else: # Es necesario tomar otra foto
                 talk.talk("It's necesary take another photo", IP, PORT)
+            
+            print "Sali de Jugar"
 
 # -------------------Métodos auxiares--------------------------
 
@@ -142,6 +155,9 @@ def aceptarEstado(st1, st2):
     dif = 0 # Cuenta las diferencias entre los tableros
     reti = -1
     retj = -1
+    print st1 # Anterior
+    print "-----------"
+    print st2 # Actual
     for i in range(0, len(st1)):
         for j in range(0, len(st1[0])):
             if st1[i][j] != st2[i][j]:
@@ -149,7 +165,7 @@ def aceptarEstado(st1, st2):
                 reti = i
                 retj = j
     # La diferencia solo debe ser de 1 fichas
-    if dif > 1:
+    if dif != 1:
         return (False, reti, retj)
     return (True, reti, retj)
 
@@ -181,57 +197,57 @@ def comprobarGanador(estado, i, j):
     n = -1 # Marca del enemigo
     operators = [0,1,2,3,4,5,6]
     m = n
-    br = games.Board(m, i, j, estado, "1",operators=operators, operator=None, parent=None,objective=None)
+    br = games.Board(mark=m, i=i, j=j, state=estado, value="1",operators=operators, operator=None, parent=None,objective=None)
     return br.isWinner()
 
-def jugar(IP, PORT):
+# def jugar(IP, PORT):
 
-    global primeraJugada, estadoActual, estadoAnterior
+#     global primeraJugada, estadoActual, estadoAnterior
 
-    path = take.showNaoImage(IP, PORT)
-    print path
-    primeraJugada = False
-    estadoActual = conv.ejecutar(path)
+#     path = take.showNaoImage(IP, PORT)
+#     # print path
+#     primeraJugada = False
+#     estadoActual = conv.ejecutar(path)
 
-    print estadoActual
+#     # print estadoActual
 
-    # Revisa si es la primera jugada
-    if primeraJugada:
-        estadoAnterior = estadoAnteriorInicial()
-        (heu, jugada) = games.play(estadoActual) # Esta es la jugada que nos devuelve la IA
-         # Logica
-        estadoAnterior = ponerNuevaFicha(estadoActual, jugada)
-        primeraJugada = False
-        # Hablar
-        talk.talk("Put the piece in the colum " + str(jugada), IP, PORT)
-        time.sleep(1)
-        talk.talk("It's your turn, when you finish, touch me some sensor to play", IP, PORT)
+#     # Revisa si es la primera jugada
+#     if primeraJugada:
+#         estadoAnterior = estadoAnteriorInicial()
+#         (heu, jugada) = games.play(estadoActual) # Esta es la jugada que nos devuelve la IA
+#          # Logica
+#         estadoAnterior = ponerNuevaFicha(estadoActual, jugada)
+#         primeraJugada = False
+#         # Hablar
+#         talk.talk("Put the piece in the colum " + str(jugada), IP, PORT)
+#         time.sleep(1)
+#         talk.talk("It's your turn, when you finish, touch me some sensor to play", IP, PORT)
        
-    else:
-        (acepta, i, j) = aceptarEstado(estadoAnterior, estadoActual)
-        if acepta: # Se puede seguir jugando
+#     else:
+#         (acepta, i, j) = aceptarEstado(estadoAnterior, estadoActual)
+#         if acepta: # Se puede seguir jugando
 
-            # Verifica si gana el otro
-            ganarOtro = comprobarGanador(estadoActual, i, j)
+#             # Verifica si gana el otro
+#             ganarOtro = comprobarGanador(estadoActual, i, j)
 
-            if ganarOtro: # Si el otro gana
-                talk.talk("Oh shit, i've lost, teacher, please, forgive us, we are mortals, we aren't perfects", IP, PORT)
-                sys.exit(0)
-            else: # Si nadie gana, juega normal
-                (heu, jugada) = games.play(estadoActual) # Esta es la jugada que nos devuelve la IA
-                estadoAnterior = ponerNuevaFicha(estadoActual, jugada)
-                # Hablar
-                talk.talk("Put the piece in the column " + str(jugada), IP, PORT)
-                # Comprobar si ganamos
-                if heu == 50:
-                    talk.talk("I win, we derserve a 5", IP, PORT)
-                    sys.exit(0)
-                time.sleep(1)
-                talk.talk("It's your turn, when you finish, touch me some sensor to play", IP, PORT)
+#             if ganarOtro: # Si el otro gana
+#                 talk.talk("Oh shit, i've lost, teacher, please, forgive us, we are mortals, we aren't perfects", IP, PORT)
+#                 sys.exit(0)
+#             else: # Si nadie gana, juega normal
+#                 (heu, jugada) = games.play(estadoActual) # Esta es la jugada que nos devuelve la IA
+#                 estadoAnterior = ponerNuevaFicha(estadoActual, jugada)
+#                 # Hablar
+#                 talk.talk("Put the piece in the column " + str(jugada), IP, PORT)
+#                 # Comprobar si ganamos
+#                 if heu == 50:
+#                     talk.talk("I win, we derserve a 5", IP, PORT)
+#                     sys.exit(0)
+#                 time.sleep(1)
+#                 talk.talk("It's your turn", IP, PORT)
                 
 
-        else: # Es necesario tomar otra foto
-            talk.talk("It's necesary take another photo", IP, PORT)
+#         else: # Es necesario tomar otra foto
+#             talk.talk("It's necesary take another photo", IP, PORT)
 
 def main(ip, port):
     """ Main entry point

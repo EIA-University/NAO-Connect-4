@@ -126,7 +126,7 @@ class Board(Node):
     if self.h == 50 or self.h == -50: # Si alguien gana
       return True
     # Si el tablero esta lleno
-    for i in range(0, len(self.state)):
+    for i in range(0, len(self.state[0])):
       if (self.state[0][i] == 0):
         return False # El tablero no esta lleno
     return True # Si el tablero esta lleno
