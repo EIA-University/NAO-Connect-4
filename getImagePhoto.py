@@ -1,15 +1,9 @@
-# -*- encoding: UTF-8 -*-
-# Get an image from NAO. Display it and save it using PIL.
+# Get an image from NAO. Display it and save it.
 
 import sys
 import time
 import random
 import os, random 
-
-
-# Python Image Library
-from PIL import Image
-
 from naoqi import ALProxy
 
 def showNaoImage(IP, PORT):
@@ -54,7 +48,7 @@ def showNaoImage(IP, PORT):
     name = name + chr(num)
     i += 1
   name = name + ".png"
-  path = "imagenes/" + name
+  path = "images/" + name
   # Save the image.
   im.save(path, "PNG")
 
@@ -62,7 +56,6 @@ def showNaoImage(IP, PORT):
   return path
 
 def sinNAO(IP, PORT):
-  file1 = random.choice(os.listdir("imagenes/"))
-  path = "imagenes/" + file1
+  file1 = random.choice(os.listdir("images/"))
+  path = "images/" + file1
   return  path
-  #return "imagenes/edfmrhfmxi.png"

@@ -1,4 +1,3 @@
-# Importar librerias neecesarias
 import pydot
 try: 
     import queue

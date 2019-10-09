@@ -1,5 +1,5 @@
 # This is a file to test de geme's flow
-import Fourinline as games
+import Fourinline as game
  
 if __name__ == '__main__':
     state = [[-1,-1,1,1,1,-1,0],
@@ -8,5 +8,5 @@ if __name__ == '__main__':
             [1,1,1,-1,-1,-1,0],
             [-1,-1,-1,1,1,-1,0],
             [-1,1,1,-1,-1,1,-1]]
-    res = games.play(state)
+    res = game.play(state)
     print res

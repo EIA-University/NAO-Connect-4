@@ -1,4 +1,3 @@
-# -*- encoding: UTF-8 -*-
 #
 # This is a tiny example that shows how to show live images from Nao using PyQt.
 # You must have python-qt4 installed on your system.
