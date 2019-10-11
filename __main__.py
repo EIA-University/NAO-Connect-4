@@ -118,7 +118,7 @@ class ReactToTouch(ALModule):
             if accept: # The lecture photo is OK
                 print "The state is accepted"
                 # Check if the enemy already win
-                checkLose = comprobarGanador(actualState, i, j)
+                checkLose = checkWinner(actualState, i, j)
                 if checkLose:
                     talk.talk("I've lost", IP, PORT)
                     sys.exit(0)
@@ -138,12 +138,12 @@ class ReactToTouch(ALModule):
             print "Exit from play"
 
 # -----------------------------------------------------
-
+# Count the diferencces between the states, if is only 1 the state is correct
 def acceptState(st1, st2):
-    dif = 0 # Cuenta las diferencias entre los tableros
-    reti = -1
-    retj = -1
-    print st1 # Anterior
+    dif = 0
+    reti = -1 # Position i where the difference was found
+    retj = -1 # Position j where the difference was found
+    print st1 # Previous
     print "-----------"
     print st2 # Actual
     for i in range(0, len(st1)):
@@ -152,12 +152,11 @@ def acceptState(st1, st2):
                 dif += 1
                 reti = i
                 retj = j
-    # La diferencia solo debe ser de 1 fichas
     if dif != 1:
         return (False, reti, retj)
     return (True, reti, retj)
 
-# Devuelve un estado anterior inicial en caso de ser la primera move
+# Returns an initial state in case it is the first move
 def previousStateInicial():
     s =   [[0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0],
@@ -167,76 +166,27 @@ def previousStateInicial():
             [0,0,0,0,0,0,0],]
     return s
 
-# Actualiza un estado poniendo una nueva ficha
-def putNewPiece(estado, move):
+# Update the state where the AI wants to play
+def putNewPiece(state, move):
     i = 0
-    flag = False # Indica si la ficha ya fue puesta
-    while (i < len(estado) and (not flag)):
-        if estado[i][move] != 0:
-            estado[i-1][move] = 1 # Se asume que estamos poniendo una move de la IA
+    flag = False # Indicate if the piece was put
+    while (i < len(state) and (not flag)):
+        if state[i][move] != 0:
+            state[i-1][move] = 1
             flag = True
         else:
             i += 1
-    if i == len(estado): # Es necesario poner en la ultima fila
-        estado[i-1][move] = 1
-    return estado
+    if i == len(state): # If is necessary put the piece in the last row
+        state[i-1][move] = 1
+    return state
 
-# Verifica si alguien gano, y retorna quien gano
-def comprobarGanador(estado, i, j):
-    n = -1 # Marca del enemigo
+# Check if someone win and tell who
+def checkWinner(state, i, j):
+    n = -1 # Enemy mark
     operators = [0,1,2,3,4,5,6]
     m = n
-    br = game.Board(mark=m, i=i, j=j, state=estado, value="1",operators=operators, operator=None, parent=None,objective=None)
+    br = game.Board(mark=m, i=i, j=j, state=state, value="1",operators=operators, operator=None, parent=None,objective=None)
     return br.isWinner()
-
-# def play(IP, PORT):
-
-#     global firstMove, actualState, previousState
-
-#     path = take.showNaoImage(IP, PORT)
-#     # print path
-#     firstMove = False
-#     actualState = getState.ejecutar(path)
-
-#     # print actualState
-
-#     # Revisa si es la primera move
-#     if firstMove:
-#         previousState = previousStateInicial()
-#         (h, move) = game.play(actualState) # Esta es la move que nos devuelve la IA
-#          # Logica
-#         previousState = putNewPiece(actualState, move)
-#         firstMove = False
-#         # Hablar
-#         talk.talk("Put the piece in the colum " + str(move), IP, PORT)
-#         time.sleep(1)
-#         talk.talk("It's your turn, when you finish, touch me some sensor to play", IP, PORT)
-       
-#     else:
-#         (accept, i, j) = acceptState(previousState, actualState)
-#         if accept: # Se puede seguir jugando
-
-#             # Verifica si gana el otro
-#             checkLose = comprobarGanador(actualState, i, j)
-
-#             if checkLose: # Si el otro gana
-#                 talk.talk("Oh shit, i've lost, teacher, please, forgive us, we are mortals, we aren't perfects", IP, PORT)
-#                 sys.exit(0)
-#             else: # Si nadie gana, juega normal
-#                 (h, move) = game.play(actualState) # Esta es la move que nos devuelve la IA
-#                 previousState = putNewPiece(actualState, move)
-#                 # Hablar
-#                 talk.talk("Put the piece in the column " + str(move), IP, PORT)
-#                 # Comprobar si ganamos
-#                 if h == 50:
-#                     talk.talk("I win, we derserve a 5", IP, PORT)
-#                     sys.exit(0)
-#                 time.sleep(1)
-#                 talk.talk("It's your turn", IP, PORT)
-                
-
-#         else: # Es necesario tomar otra foto
-#             talk.talk("It's necesary take another photo", IP, PORT)
 
 def main(ip, port):
     """ Main entry point

@@ -8,7 +8,7 @@ import copy
 
 import convertirImgToMatrix as conv
 
-# Clase basica para el tablero
+# Basic class for every node in the search tree
 class Node(object):
   def __init__(self, state,value,operators, operator=None, parent=None,objective=None):
     self.state= state
@@ -25,16 +25,12 @@ class Node(object):
     node.level=node.parent.level+1
     self.children.append(node)
     return node
-  
-  def add_node_child(self, node):
-    node.level=node.parent.level+1
-    self.children.append(node)    
-    return node
 
+  # Return a list of states (And None if is the case) where the node father apply every operator
   def getchildrens(self):
     listChildren = []
     for k, op in enumerate(self.operators):
-      state = self.getState(k) # State, Pos i, Pos j
+      state = self.getState(k)
       if state == None:
         listChildren.append(None)
       else: 
@@ -46,52 +42,24 @@ class Node(object):
 
   def getState(self, index):
     pass
-  
-  def __eq__(self, other):
-    return self.state == other.state
- 
-  def __lt__(self, other):
-    return self.f() < other.f()
-  
+
+  # Check if one state is already in the search tree
   def repeatStatePath(self, state):
       n = self
       while n is not None and n.state is not state:
           n = n.parent
       return n is not None
     
-  def pathObjective(self):
-      n=self
-      result=[]
-      while n is not None:
-          result.append(n)
-          n=n.parent
-      return result
-    
-  def printPath(self):
-      stack=self.pathObjective()
-      while len(stack)!=0:
-          node=stack.pop()
-          if node.operator is not None:
-              print "f'operador:  {node.operators[node.operator]} \t estado: {node.state}'"
-          else:
-              print "f' {node.state}'"
-  
   def heuristic(self):
     return 0
-  
-  def cost(self):
-    return 1
-  
-  def f(self): 
-    return self.cost()+self.heuristic()
 
-# Clase tablero para el 4 en linea
+# More specific class for the board
 class Board(Node):
   # mark = 1 -> IA
   # mark = -1 -> Enemigo
-  # i : Fila donde se hizo la ultima jugada
-  # j : Columna donde se hizo la ultima jugada
-  # h : Heuristica del estado actual
+  # i : Last move row
+  # j : Last move column
+  # h : Heuristic's state
   
   def __init__(self, mark, i, j, **kwargs):
     self.mark = mark
@@ -100,19 +68,18 @@ class Board(Node):
     self.h = None
     super(Board, self).__init__(**kwargs)
 
-  # Modificacion necesaria al agregar nuevos atributos a la clase
   def add_child(self, mark, i, j, value, state, operator):
     node=type(self)(mark=mark, i=i, j=j, value=value, state=state, operator=operator,parent=self, operators=self.operators)
     node.level=node.parent.level+1
     self.children.append(node)
     return node
 
-  # Aplicar alguno de los 7 operadores
+  # Apply the 7 operators (Play in one column)
   def getState(self, i):
     state = copy.deepcopy(self.state)
     nextState = copy.deepcopy(state)
-    mark = self.mark*-1 # Los hijos de un estado poseen la marca contraria (Cambio de turno)
-    if (state[0][i] == 0): # Si la columna no esta llena
+    mark = self.mark*-1 # The children's states has the opposite mark
+    if (state[0][i] == 0): # If its possible to play
       for k in reversed(range(0,6)):
         if (state[k][i] == 0):
           nextState[k][i] = mark
@@ -120,32 +87,22 @@ class Board(Node):
     else:
       return None
 
-  # Define las condiciones para cuando un estado es final
-  def isTerminal(self):
-    if self.h == 50 or self.h == -50: # Si alguien gana
-      return True
-    # Si el tablero esta lleno
-    for i in range(0, len(self.state[0])):
-      if (self.state[0][i] == 0):
-        return False # El tablero no esta lleno
-    return True # Si el tablero esta lleno
-
-  # Selecciona la mejor jugada
+  # Return a vector of heuristic values, the higher is the best move
   def chooseBestMove(self):
-    heuristicValues = [] # Valores heuristicos de los hijos
+    heuristicValues = []
     for i, child in enumerate(self.children):
       h = child.heuristic()
       heuristicValues.append(h)
     if(len(heuristicValues)==0):
       return heuristicValues
     (iMax, cont, maxHeuristic) = self.findMax(heuristicValues)
-    if maxHeuristic==50 or maxHeuristic==40 or maxHeuristic==-1:
+    if maxHeuristic==50 or maxHeuristic==40 or maxHeuristic==-1: # Cases where is not necessary continue evaluating
       return heuristicValues
     # Best Move
-    if cont < 2: # Paso 1: Retorna el movimiento que mas jugadas le bloquea al enemigo
-      #print("El mov que mas bloquea: ", heuristicValues)
+    if cont < 2: # Step 1: The move that block more enemy moves
       return heuristicValues
-    # Calcula heuristicas del paso 2 si existe mas de un hijo con maxHeuristic
+    # If there a heuristic draw
+    # Step 2: The move that generate more possible moves in the next turn
     for i in range(iMax, len(heuristicValues)):
       if heuristicValues[i] == maxHeuristic:
         h = self.children[i].getHorizontalState(self.children[i].i)
@@ -153,74 +110,66 @@ class Board(Node):
         (d1, d2, posD1, posD2) = self.children[i].getDiagonalState(self.children[i].i, self.children[i].j)
         heuristicValues[i] += self.countOpenMovesVer(v, self.children[i].i, self.children[i].mark) + self.countOpenMovesHorDia(h, self.children[i].j, self.children[i].mark) + self.countOpenMovesHorDia(d1, posD1, self.children[i].mark) + self.countOpenMovesHorDia(d2, posD2, self.children[i].mark)
     (iMax, cont, maxHeuristic) = self.findMax(heuristicValues)
-    if cont < 2: # Paso 2: Retorna el movimiento que mas jugadas me genere
-      #print("Mov que mas me genera: ", heuristicValues)
+    if cont < 2:
       return heuristicValues
-    # Calcula heuristicas del paso 3 si existe mas de un hijo con maxHeuristic
+    # If there a heuristic draw
+    # Step 3: The move that generate less possible moves for the enemy in the next turn
     for i in range(iMax, len(heuristicValues)):
       if heuristicValues[i] == maxHeuristic:
-        if(self.children[i].i == 0): # Si estamos en i=0 no le generamos jugadas al enemigo
+        if(self.children[i].i == 0): # If we put in the first row we do not generate moves
           heuristicValues[i] += 15
-        if(self.children[i].i >0): # Analizar los movimientos del enemigo si este pone encima
+        if(self.children[i].i >0): # If the enemy put his piece above us
           h = self.children[i].getHorizontalState(self.children[i].i-1)
           v = self.children[i].getVerticalState(self.children[i].j)
           (d1, d2, posD1, posD2) = self.children[i].getDiagonalState(self.children[i].i-1, self.children[i].j)
           heuristicValues[i] += 15 - (self.countOpenMovesVer(v, self.children[i].i, -self.children[i].mark) + self.countOpenMovesHorDia(h, self.children[i].j, self.children[i].mark*-1) + self.countOpenMovesHorDia(d1, posD1, self.children[i].mark*-1) + self.countOpenMovesHorDia(d2, posD2, self.children[i].mark*-1))
     (iMax, cont, maxHeuristic) = self.findMax(heuristicValues)
-    if cont < 2: # Paso 3: Retorna el movimiento que mmenos jugadas le genera al enemigo
-      #print("Mov que menos le genera al otro: ", heuristicValues)
+    if cont < 2:
       return heuristicValues
-    # Calcula el primero movimiento que no me bloquee una jugada ganadora
+    # If there a heuristic draw
+    # Step 4: Return the first move that not block a win move
     for i in range(iMax, len(heuristicValues)):
       if heuristicValues[i] == maxHeuristic: 
-        # Analizar los movimientos mios
-        if(self.children[i].i == 0): # Paso 4: Si i=0 no me bloquea jugadas ganadoras
-          #print("Mov que no me bloquea jugadas ganadoras: ", heuristicValues)
+        if(self.children[i].i == 0):
           return heuristicValues
         h = self.children[i].getHorizontalState(self.children[i].i-1)
         v = self.children[i].getVerticalState(self.children[i].j)
         (d1, d2, posD1, posD2) = self.children[i].getDiagonalState(self.children[i].i-1, self.children[i].j)
         m = self.children[i].mark
-        # Paso 4: Primer movimiento que no bloquea jugadas ganadoras
         if not (self.checkNotAllowMoves(h,self.children[i].j, m) or self.checkNotAllowMoves(v,self.children[i].i-1, m) or self.checkNotAllowMoves(d1,posD1, m) or self.checkNotAllowMoves(d2,posD2, m)):
-          #print("Mov que no me bloquea jugadas ganadoras: ", heuristicValues)
           return heuristicValues
-    # Paso 5: El 2do mejor movimiento que no me bloquee jugadas ganadoras (Movimiento mas conveniente)
-    max2 = -1 # La segunda mayor heuristica
-    iMax2 = -1 # Indice del primer hijo con h != maxHeuristic
+    # If all the best moves block a win move we need to analyse if is there a better move to make in that case
+    max2 = -1 # The second max value of heuristicValues
+    iMax2 = -1 # The first move whit h != maxHeuristic
     for i in range(0, len(heuristicValues)):
       if heuristicValues[i]>max2 and heuristicValues[i]<maxHeuristic:
         max2 = heuristicValues[i]
         iMax2 = i
     if max2 != -1:
-      #print("Cualquiera conveniente: ", heuristicValues)
-      heuristicValues[iMax2] = maxHeuristic + 5 # Aumentar la heuristica del movimiento mas conveniente
+      heuristicValues[iMax2] = maxHeuristic + 5
       return heuristicValues
-    # Orden de operadores
-    #print("Cualquiera: ", heuristicValues)
+    # Operator order
     return heuristicValues
 
-  # Retorna el valor heuristico de un estado hasta el 4 paso de la heuristica definida.
+  # Return a value for the first steps of the heuristic process
   def heuristic(self):  
     if self.isWinner():
       return 50
     if self.block():
       return 40
-    # Empieza a anaizar cual es el mejor movimiento
-    if(self.i >0): # Descartar los movimientos prohibidos.
+    if(self.i >0): # Mark the not allowed moves
       h = self.getHorizontalState(self.i-1)
       v = self.getVerticalState(self.j)
       (d1, d2, posD1, posD2) = self.getDiagonalState(self.i-1, self.j)
-      m = -self.mark # Los movimientos prohibidos se analizan con la marca del enemigo
+      m = -self.mark
       if self.checkNotAllowMoves(h,self.j, m) or self.checkNotAllowMoves(v,self.i-1, m) or self.checkNotAllowMoves(d1,posD1, m) or self.checkNotAllowMoves(d2,posD2, m):
         return -1
-    # Cuantos movimientos se le bloquean al enemigo
+    # How many moves we block to the enemy
     h = self.getHorizontalState(self.i)
     v = self.getVerticalState(self.j)
     (d1, d2, posD1, posD2) = self.getDiagonalState(self.i, self.j)
     return self.countBlockEnemyMovesHorDia(h, self.j) + self.countBlockEnemyMovesHorDia(d1, posD1) +  self.countBlockEnemyMovesHorDia(d2, posD2) + self.countBlockEnemyMovesVer(v, self.i)
 
-  # 1. Saber si gane
   def isWinner(self):
     h = self.getHorizontalState(self.i)
     v = self.getVerticalState(self.j)
@@ -230,7 +179,7 @@ class Board(Node):
       return True
     return False
 
-  # 2. Saber si bloquee
+  # Do we block a move?
   def block(self):
     h = self.getHorizontalState(self.i)
     v = self.getVerticalState(self.j)
@@ -239,101 +188,98 @@ class Board(Node):
       return True
     return False
 
-  # ---Metodos auxiliares para las funciones heuristicas---
+  # ----------------------------------
 
+  # Return the max value in a vector, the number of items that hold the max value and the first item that hold the value
   def findMax(self, vec):
-    cont = 0 # Cuenta cuantos hijos tienen la maxima heuristica
-    iMax = -1 # Indice del primer hijo hijo con maxima heuristica
+    cont = 0
+    iMax = -1
     maxV = max(vec)
     for i in range(0, len(vec)):
       if vec[i] == maxV:
         cont += 1
         if iMax == -1:
           iMax = i
-    return (iMax, cont, maxV) # Primer hijo con maxima heuristica, numero de hijos con maxima heuristica, maxima heuristica
+    return (iMax, cont, maxV)
   
-  # Retorna la horizontal dada la fila
   def getHorizontalState(self, i):
     horizontal = []
     for j in range(0,len(self.state[0])):
       horizontal.append(self.state[i][j])
     return horizontal
 
-  # Retorna la vertical dada la columna
   def getVerticalState(self, j):
     vertical = []
     for i in range(0,len(self.state)):
       vertical.append(self.state[i][j])
     return vertical
 
-  # Retorna dos vectores que representan las dos diagonales de una posicion dadas las coordenadas de este (i,j)
+  # Return the 2 diagonals that contains the (i,j) move 
   def getDiagonalState(self, i, j):
     i2 = i
     j2 = j
     diagonal1 = []
     diagonal2 = []
-    # Para sacar la diagonal1
+    # The diagonal 1
     while i2<len(self.state)-1 and j2>0:
       i2+=1
       j2-=1
-    posD1 = i2-i # Indica en cual posicion de la diagonal generada quedo la ficha que se puso
+    posD1 = i2-i # This number is tell us the new position of the move in the new array
     while i2>=0 and j2<len(self.state[0]):
       diagonal1.append(self.state[i2][j2])
       i2-=1
       j2+=1
     i2 = i
     j2 = j
-    # Para sacar la diagonal2
+    # The diagonal 2
     while i2>0 and j2>0:
       i2-=1
       j2-=1
-    posD2 = j-j2 # Indica en cual posicion de la diagonal generada quedo la ficha que se puso
+    posD2 = j-j2 # This number is tell us the new position of the move in the new array
     while i2<len(self.state) and j2<len(self.state[0]):
       diagonal2.append(self.state[i2][j2])
       i2+=1
       j2+=1
-    return (diagonal1, diagonal2, posD1, posD2) # Se retornan las diagonales y las posiciones donde quedo la ficha en dicho vector
-  
-  # Dado un vector, verifica si la marca dd esta en el 4 veces seguidas.
+    return (diagonal1, diagonal2, posD1, posD2)
+  .
   def checkWin(self, vec, mark):
     if len(vec) < 4:
       return False
     else:
-      val = 0 # Acumulador temporal
+      val = 0
       for i in range(0, len(vec)):
         if vec[i]==mark:
           val+=1
         else:
           val = 0
-        if val==4: # Si hay 4 en linea.
+        if val==4:
           return True
       return False
   
-  # Dado un vector, verifica si he bloqueado
   def checkBlock(self, vec, pos):
-    posIni = max(0,pos-3)
-    posFin = posIni+3
-    while (posIni<=pos and posFin<len(vec)):
-      val = 0 # Acumulador
-      for i in range(posIni, posFin+1):
-        if i is not pos: # Sin analizar la posicion donde acabo de poner...
+    initPos = max(0,pos-3)
+    finalPos = initPos+3
+    while (initPos<=pos and finalPos<len(vec)):
+      val = 0
+      for i in range(initPos, finalPos+1):
+        if i is not pos:
           if vec[i]==-self.mark:
             val+=1
-      if val==3: # ... Analiza si existen 3 marcas del enemigo 
+      if val==3:
         return True
-      posIni+=1
-      posFin+=1
+      initPos+=1
+      finalPos+=1
     return False
 
-  # Dado un vector (Horizontal o Diagonal), cuenta cuantos movimientos le bloqueo al oponente
+  # In a horizontal or diagonal array, count how many moves we block to the enemy
   def countBlockEnemyMovesHorDia(self, vec, pos):
-    posIni = max(0,pos-3)
-    posFin = posIni+3
+    initPos = max(0,pos-3)
+    finalPos = initPos+3
     moves=0
-    while (posIni<=pos and posFin<len(vec)):
+    while (initPos<=pos and finalPos<len(vec)):
       flag=False
-      val = 0 # Acumulador
-      for i in range(posIni, posFin+1):
+      val = 0
+      for i in range(initPos, finalPos+1):
         if i is not pos:
           if vec[i]==-self.mark:
             val+=1
@@ -341,11 +287,11 @@ class Board(Node):
             flag=True
       if flag is not True and val>0:
         moves+=1
-      posIni+=1
-      posFin+=1
+      initPos+=1
+      finalPos+=1
     return moves
 
-  # Dado un vector (Vertical), verifica si bloqueo al oponente
+  # In a vertical array, count how many moves we block to the enemy
   def countBlockEnemyMovesVer(self, vec, pos):
     if(pos == len(vec)-1):
       return 0
@@ -358,7 +304,7 @@ class Board(Node):
         return 1  
     return 0
 
-  # Dado un vector (Vertical), cuenta cuantas posibilidades de ganar se tienen
+  # Count if is possibly win with a vertical line
   def countOpenMovesVer(self, vec, pos, mark):
     i = 0
     cont = 0
@@ -369,24 +315,24 @@ class Board(Node):
       i+=1
     return 0
 
-  # Dado un vector (Horizontal o Diagonal), cuenta cuantas movimientos posibilidades tengo de ganar
+  # Count how many possible lines we have in a horizontal or diagonal vector
   def countOpenMovesHorDia(self, vec, pos, mark):
-    posIni = max(0,pos-3)
-    posFin = posIni+3
+    initPos = max(0,pos-3)
+    finalPos = initPos+3
     moves = 0
-    while (posIni<=pos and posFin<len(vec)):
-      val = 0 # Acumulador
-      for i in range(posIni, posFin+1):
+    while (initPos<=pos and finalPos<len(vec)):
+      val = 0
+      for i in range(initPos, finalPos+1):
         if i is not pos:
-          if vec[i]==0 or vec[i]==mark: # Si la posicion esta libre
+          if vec[i]==0 or vec[i]==mark:
             val+=1
       if val == 3:
         moves+=1
-      posIni+=1
-      posFin+=1
+      initPos+=1
+      finalPos+=1
     return moves
 
-  # Dado un vector, verifica si es un se trata de un movimiento prohibido o que me bloquea una jugada ganadora
+  # Check if one move blocks a win move
   def checkNotAllowMoves(self, vec, pos, mark):
     vecCopy = copy.deepcopy(vec)    
     vecCopy[pos] = mark
@@ -394,56 +340,25 @@ class Board(Node):
       return True
     return False
 
-  # Imprime el arbol con sus heuristicas
-  def printTree(self,node,nivel,ruta):
-    if len(node.children)>0:
-      print(ruta,"----------------")
-    for i,n in enumerate(node.children):
-      print("Nivel: ",nivel, "Hijo: ", i,"Heuristica: ", n.h)
-    for i,n in enumerate(node.children):
-      node.printTree(n,nivel+1,ruta + "-" + str(i))
-
-  # Cambia el valor de las heuristicas
-  def changeHeuristics(self, vec):
-    max = float('-inf')
-    # Buscar el maximo
-    for i in range(0, len(vec)):
-      if not (vec[i]==50 or vec[i]==40 or vec[i]==-1):
-        if vec[i]>max:
-          max = vec[i]
-    # Si no hay cambios
-    if max == float('-inf'):
-      return vec
-    # Cambiar heuristica
-    for i in range(0, len(vec)):
-      if not (vec[i]==50 or vec[i]==40 or vec[i]==-1):
-        if vec[i] == max:
-          vec[i] = 10
-        else:
-          vec[i] = 0
-    return vec
-
-# Algoritmo alpha beta para recorrer el arbol
+# Alpha beta pruning to get the best move
+# Return the heuristic value and the best move
 def alpha_beta(node, depth, a, b, turn):
   # turn: true - MAX
   # turn: false - MIN
-  if (depth == 0 or node.isTerminal()):
+  if (depth == 0):
     return (node.h, node.operator)
-  # Agregar hijos
+  # Add childs
   children=node.getchildrens()
   for k in range(0, len(children)):
     if children[k] is not None:
       (child, i, j) = children[k]
       newChild = node.add_child(-node.mark, i=i, j=j, value=node.value+'-'+str(k), state=child, operator=k)
-  # Agregar heuristicas a los hijos
+  # Put the respective heuristic values
   heuristicValues = node.chooseBestMove()
-  #heuristicValues = node.changeHeuristics(heuristicValues)
   for i in range(0, len(heuristicValues)):
     aux = heuristicValues[i]
-    #if node.children[i].mark ==-1 and aux == 0:
-    #  aux = -aux
     node.children[i].h = aux
-  if turn: # Si juega MAX
+  if turn: # Max level
     value = float('-inf')
     operator = None
     for i, n in enumerate(node.children):
@@ -455,7 +370,7 @@ def alpha_beta(node, depth, a, b, turn):
       if (a>=b):
         break
     return (value, operator)
-  else: # Si juega MIN
+  else: # Min level
     value = float('inf')
     operator = None
     for i, n in enumerate(node.children):
@@ -468,11 +383,11 @@ def alpha_beta(node, depth, a, b, turn):
         break 
     return (value, operator)
 
-# Metodo main que va a llamar NAO
+# Nao will call this method
 def play(initState):
-  n = -1 # Marca del enemigo
-  b = 1 # Marca de la IA
+  n = -1 # Enemy mark
+  b = 1 # AI mark
   operators = [0,1,2,3,4,5,6]
   m = n
   br = Board(mark=m, i=0, j=0, state=initState,value="1",operators=operators, operator=None, parent=None,objective=None)
-  return alpha_beta(br, 1, float('-inf'), float('inf'), True) # Columna de la mejor jugada
+  return alpha_beta(br, 1, float('-inf'), float('inf'), True)
