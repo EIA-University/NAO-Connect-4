@@ -1,0 +1,1 @@
+This folder will contain all the photos that NAO will take while it's playing the game.
