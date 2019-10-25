@@ -5,6 +5,7 @@ import time
 import random
 import os, random 
 from naoqi import ALProxy
+from PIL import Image
 
 def showNaoImage(IP, PORT):
   """

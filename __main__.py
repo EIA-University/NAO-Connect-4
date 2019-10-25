@@ -6,7 +6,7 @@ from naoqi import ALModule
 import getImagePhoto as take
 import sendText as talk
 import getStateFromImage as getState
-import Fourinline as game
+import connect_four as game
 
 # Global variable to store the ReactToTouch module instance
 ReactToTouch = None
@@ -48,9 +48,6 @@ class ReactToTouch(ALModule):
             "ReactToTouch")
 
         global IP1, PORT1
-        # for p in value:
-        #     if p[1]:
-        #         play(IP1, PORT1)
 
         touched_bodies = []
         for p in value:
@@ -58,8 +55,6 @@ class ReactToTouch(ALModule):
                 touched_bodies.append(p[0])
                 self.play(IP1, PORT1)
                 break
-
-        # self.say(touched_bodies)
 
         # Subscribe again to the event
         memory.subscribeToEvent("TouchChanged",
@@ -216,8 +211,29 @@ def main(ip, port):
         myBroker.shutdown()
         sys.exit(0)
 
+# Check if a IP is valid
+def validate_ip(s):
+    a = s.split('.')
+    if len(a) != 4:
+        return False
+    for x in a:
+        if not x.isdigit():
+            return False
+        i = int(x)
+        if i < 0 or i > 255:
+            return False
+    return True
 
 if __name__ == '__main__':
-    IP = "192.168.43.219"  # Replace here with your NaoQi's IP address.
+    IP = "nao.local"  # Replace here with your NaoQi's IP address.
     PORT = 9559
+    # Read IP address from first argument if any.
+    if len(sys.argv) > 1:
+        validate = sys.argv[1]
+        if validate_ip(validate):
+            IP = validate
+        else:
+            print "IP Invalid, It will be use the nao.local IP"
+
+    # Execute the program
     main(IP, PORT)
